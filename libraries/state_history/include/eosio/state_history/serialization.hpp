@@ -681,4 +681,33 @@ ST& operator<<(ST& ds, const eosio::state_history::get_blocks_result_v0& obj) {
    return ds;
 }
 
+template <typename ST>
+ST& operator<< (ST& ds, nullptr_t) { return ds; }
+
+template <typename ST, typename T>
+ST& operator<< (ST& ds, std::reference_wrapper<T> r) {
+   fc::raw::pack(ds, fc::unsigned_int(r.index()-1));
+   fc::raw::pack(ds, r.get());
+   return ds;
+}
+
+template <typename ST>
+ST& operator<<(ST& ds, const eosio::state_history::optional_signed_block& obj) {
+   fc::raw::pack(ds, bool(obj.index() != 0));   
+   std::visit([&ds](auto v) { fc::raw::pack(ds, v);}, obj);
+   return ds;
+}
+
+template <typename ST>
+ST& operator<<(ST& ds, const eosio::state_history::get_blocks_result_v1& obj) {
+   fc::raw::pack(ds, obj.head);
+   fc::raw::pack(ds, obj.last_irreversible);
+   fc::raw::pack(ds, obj.this_block);
+   fc::raw::pack(ds, obj.prev_block);
+   fc::raw::pack(ds, obj.block);
+   fc::raw::pack(ds, obj.traces);
+   history_pack_big_bytes(ds, obj.deltas);
+   return ds;
+}
+
 } // namespace fc
